@@ -1,1 +1,37 @@
-.vscode/
+# Ignore All
+*
+# Unignore files with extensions
+!*.*
+# Unignore all directories
+!*/
+
+# More Ignores
+*.txt
+*.sh
+
+# Unignores
+!Makefile
+
+# Generated files
+*.o
+*.d
+*.pyc
+*.exe
+
+# Backups
+*~
+*.bak
+
+# IDE Related
+*.vscode
+
+# C++ files must end in .cpp!
+*.cc
+*.c++
+
+# Latex is good, but no intermediate files!
+*.log
+*.out
+*.dvi
+*.bbl
+*.blg
