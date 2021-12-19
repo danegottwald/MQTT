@@ -11,13 +11,12 @@ To run client
 
 
 To run server
-    ./wtec_server [--ip] [--port]
+    ./wtec_server [port]
 
-g++ -std=c++14 -Iinclude -c -o obj/server.o server.cpp
-g++ -std=c++14 -Iinclude -o wtec_server obj/wtec_server.o obj/server.o -pthread
-wtec_server successfully built
 
-g++ -std=c++14 -Iinclude -c -o obj/wtec_server.o wtec_server.cpp
-g++ -std=c++14 -Iinclude -c -o obj/server.o server.cpp
-g++ -std=c++14 -Iinclude -o wtec_server obj/wtec_server.o obj/server.o -pthread
-wtec_server successfully built
+inline keyword
+    replaces function invocation with body of the function
+
+MQTT V5.0
+    https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html
+

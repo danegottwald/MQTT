@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from multiprocessing import Process
 import subprocess
 import signal
@@ -35,16 +37,18 @@ def publish_count_data():
 
         # Sleep for random amount of time
         sleep_time = random.randint(1, 30)
-        print("Process " + str(os.getpid()) + " will sleep for " 
-              + str(sleep_time) + "s, and publish " + str(rand))
+        sleep_time = 5
+        print("Process " + str(os.getpid()) + ": sleep " 
+              + str(sleep_time) + "s, publish " + str(rand))
         time.sleep(sleep_time)
 
         # Return from Process if command failed (remove if you want
         # client to attempt to send messages even if server or client 
         # has error)
-        run = subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL)
+        run = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        #run = subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, capture_output=)
         if (run.returncode):
-            print("Process " + str(os.getpid()) + " exited with error")
+            print("Process " + str(os.getpid()) + ": " + run.stderr, end="")
             return
             
 

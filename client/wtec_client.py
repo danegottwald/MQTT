@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from urllib import parse
 import paho.mqtt.client as mqtt
 import random
