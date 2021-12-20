@@ -5,17 +5,8 @@
 #include <boost/asio.hpp>
 #include <boost/bind/bind.hpp>
 
-#include <pthread.h>
-
-inline void close_proc(std::set<sptr_client_endpoint>& cons, 
-                       mi_sub_con& subs, 
-                       sptr_client_endpoint const& con) {
-    cons.erase(con);
-    
-    auto& idx = subs.get<tag_con>();
-    auto r = idx.equal_range(con);
-    idx.erase(r.first, r.second);
-}
+typedef mqtt::server<>::endpoint_t          client_endpoint;
+typedef std::shared_ptr<client_endpoint>    sptr_client_endpoint;
 
 // Constructor
 mqtt_server::mqtt_server(uint16_t port = 1883) {
@@ -44,7 +35,7 @@ void mqtt_server::listen() {
     instance->listen();
 
     // Create 3 minute timer
-    auto interval = boost::asio::chrono::seconds(3);
+    auto interval = boost::asio::chrono::seconds(10);
     boost::asio::steady_timer timer(io_context, interval);
 
     boost::function<void(const boost::system::error_code&)> loop;
@@ -53,7 +44,7 @@ void mqtt_server::listen() {
         std::cout << "clients: " << data.clients << std::endl;
         std::cout << "sum    : " << data.count_sum << std::endl;
         std::cout << "average: " 
-                  << ((data.clients) ? (data.count_sum / data.clients) : 0)
+                  << ((data.clients) ? (data.count_sum / float(data.clients)) : 0)
                   << std::endl;
 
         // Set new expiration time
@@ -66,6 +57,7 @@ void mqtt_server::listen() {
         timer.async_wait(loop);
     };
 
+    // Run timer asynchronously
     timer.async_wait(boost::bind(loop, boost::asio::placeholders::error));
 
     // Blocks here for event loops
@@ -82,8 +74,6 @@ void mqtt_server::set_handlers() {
         }
     );
 
-    int abc = 1;
-
     // Set accept handler for server 'instance'
     instance->set_accept_handler(
         [this](sptr_client_endpoint sptr_ep) {
@@ -91,7 +81,7 @@ void mqtt_server::set_handlers() {
 
             // typedef std::remove_reference_t<decltype(ep)>::packet_id_t
             //     packet_id_t;
-            std::cout << "debug: accept" << std::endl;
+            //std::cout << "debug: accept" << std::endl;
 
             // Start session with connected client
             //ep.start_session(std::move(sptr_ep));
@@ -104,6 +94,13 @@ void mqtt_server::set_handlers() {
             // PUBLISH
             // SUBSCRIBE
             // UNSUBSCRIBE
+
+            // CLOSE
+            ep.set_close_handler(
+                []() {
+                    //std::cout << "[client] close" << std::endl;
+                }
+            );
 
             // ERROR
             ep.set_error_handler([&](mqtt::error_code ec){
@@ -119,7 +116,7 @@ void mqtt_server::set_handlers() {
                     bool clean_session,
                     std::uint16_t keep_alive) {
                         // Acknowledge connection, accept
-                        std::cout << "[client] connect" << std::endl;
+                        //std::cout << "[client] connect" << std::endl;
                         ep.connack(false, mqtt::connect_return_code::accepted);
                         return true;
                 }
@@ -128,7 +125,7 @@ void mqtt_server::set_handlers() {
             // DISCONNECT
             ep.set_disconnect_handler(
                 [&ep]() {
-                    std::cout << "[client] disconnect" << std::endl;
+                    //std::cout << "[client] disconnect" << std::endl;
                     ep.disconnect(mqtt::v5::disconnect_reason_code::normal_disconnection);
                 }
             );
@@ -142,16 +139,18 @@ void mqtt_server::set_handlers() {
                     mqtt::publish_options pubopts,
                     mqtt::buffer topic_name,
                     mqtt::buffer contents) {
-                        std::cout << "[client] publish" << std::endl;
+                        std::cout << "[client] publish " << contents << std::endl;
                         // Increment client publish request
                         data.clients++;
                         // Sum client publish count data (lexical_cast str to int)
                         data.count_sum += boost::lexical_cast<boost::uint64_t>(contents);
-                        std::cout << "[server] topic_name: " << topic_name << std::endl;
-                        std::cout << "[server] contents: " << contents << std::endl;
+                        //std::cout << "[server] topic_name: " << topic_name << std::endl;
+                        //std::cout << "[server] contents: " << contents << std::endl;
                         return true;
                 }
             );
+
+            // DO REST OF HANDLERS
         }
     );
 }
