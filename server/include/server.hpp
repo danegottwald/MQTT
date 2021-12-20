@@ -12,34 +12,6 @@
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/member.hpp>
 
-typedef mqtt::server<>::endpoint_t client_endpoint;
-typedef std::shared_ptr<client_endpoint> sptr_client_endpoint;
-
-struct sub_con {
-    sub_con(mqtt::buffer topic, sptr_client_endpoint con, mqtt::qos qos_value)
-        :topic(std::move(topic)), con(std::move(con)), qos_value(qos_value) {}
-    mqtt::buffer topic;
-    sptr_client_endpoint con;
-    mqtt::qos qos_value;
-};
-
-struct tag_topic {};
-struct tag_con {};
-
-typedef boost::multi_index::multi_index_container<
-    sub_con,
-    boost::multi_index::indexed_by<
-        boost::multi_index::ordered_non_unique<
-            boost::multi_index::tag<tag_topic>,
-            BOOST_MULTI_INDEX_MEMBER(sub_con, mqtt::buffer, topic)
-        >,
-        boost::multi_index::ordered_non_unique<
-            boost::multi_index::tag<tag_con>,
-            BOOST_MULTI_INDEX_MEMBER(sub_con, sptr_client_endpoint, con)
-        >
-    >
-> mi_sub_con;
-
 class mqtt_server {
     private:
         // Server Instance (boost::optional to avoid construction)
@@ -48,18 +20,16 @@ class mqtt_server {
         // IO Context contains state to run event loops
         boost::asio::io_context io_context;
 
-        std::set<sptr_client_endpoint> connections;
-        mi_sub_con subscribers;
-
         // Atomic struct (thread safe to avoid data race)
         // <# client publishes, total sum count>
         // https://www.boost.org/doc/libs/1_78_0/doc/html/atomic/interface.html
-        struct client_data {
+        struct count_data {
             boost::uint16_t clients;
             boost::uint64_t count_sum;
         };
-        boost::atomic<client_data> atomic_data {};
+        boost::atomic<count_data> atomic_data {};
 
+        // Private Helper Functions
         void set_handlers();
 
     public:
