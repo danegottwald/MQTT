@@ -3,7 +3,7 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include "server.hpp"
+#include "wtec_server.hpp"
 
 int main(int argc, char** argv) {
     if (argc != 2) {
