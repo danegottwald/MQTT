@@ -6,7 +6,7 @@ TARGET = server
 INCLUDE_DIR = include
 OBJ_DIR = obj
 
-SRCS = server.cpp wtec_server.cpp
+SRCS = server.cpp mqtt_server.cpp mqtt_timer.cpp
 OBJS = $(SRCS:%.cpp=${OBJ_DIR}/%.o)
 
 LIBS = -pthread
