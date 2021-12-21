@@ -3,7 +3,7 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include "wtec_server.hpp"
+#include "mqtt_server.hpp"
 
 int main(int argc, char** argv) {
     if (argc != 2) {
@@ -15,24 +15,14 @@ int main(int argc, char** argv) {
     std::uint16_t port = boost::lexical_cast<std::uint16_t>(argv[1]);
 
     // Run server
-    mqtt_server server(port);
+    wtec::mqtt_server server(port);
     server.listen();
-
-    //mqtt::setup_log();
 
     return 0;
 }
 
 // MQTT_CPP hosts on IP 0.0.0.0, so any incoming ip can connect
-
 // Localhost port (127.0.0.1 / 0.0.0.0)
-
-// https://www.boost.org/doc/libs/1_78_0/
-
-// ideas for sum of last 3 minutes of data
-// 1. create main thread that checks every three minutes and computes 
-//      average, server listen on another thread that locks when inc's
-// 2. 
 
 // MQTT (MQ Telemetry Transport, MQ refers to IBM's series of products)
 //      Uses Publish/Subscribe model
