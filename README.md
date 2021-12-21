@@ -1,23 +1,27 @@
-pip install paho-mqtt
-    python mqtt library
+# Client (client/)
+Requires the following:
+* [Mosquitto](https://mosquitto.org/download/)
+```bash
+sudo apt-get install mosquitto mosquitto-clients
+```
 
-g++
+To Run:
+```bash
+py client.py
+```
 
-To run client
-    python3 wtec_client.py
+# Server (server/)
+Requires the following:
+* [Boost C++](https://www.boost.org/users/download/)
+```bash
+sudo apt-get install libboost-all-dev
+```
 
-To install boost (boost 1.74)
-    https://www.boost.org/users/history/version_1_74_0.html
-    sudo apt-get install libboost-all-dev
+To Run:
+```bash
+# Run make
+make
 
-
-To run server
-    ./wtec_server [port]
-
-
-inline keyword
-    replaces function invocation with body of the function
-
-MQTT V5.0
-    https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html
-
+# Run application
+./server [port]
+```
