@@ -13,9 +13,10 @@ typedef boost::function<void(const boost::system::error_code&)>
 class mqtt_timer {
 private:
     // Timer instance
-    boost::asio::steady_timer timer;
+    boost::optional<boost::asio::steady_timer> timer;
 
     // Interval relevance
+    boost::uint32_t count = 0;
     boost::uint32_t interval_seconds;
     boost::asio::chrono::seconds interval;
 
@@ -39,6 +40,7 @@ public:
     // Supply new function to async_wait on
     void async_wait(const func_ptr &l);
 
+    inline boost::uint32_t get_count() { return count; }
     inline const func_ptr &get_func() { return func; }
 };
 

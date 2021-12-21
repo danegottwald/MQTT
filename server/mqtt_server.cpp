@@ -3,8 +3,6 @@
 
 #include <iostream>
 
-#include <boost/thread/thread.hpp>
-
 typedef mqtt::server<>::endpoint_t              client_endpoint;
 typedef std::shared_ptr<client_endpoint>        sptr_client_endpoint;
 
@@ -35,15 +33,16 @@ mqtt_server::~mqtt_server() {
 
 // Set the wqtt_server to a listen state
 void mqtt_server::listen() {
-
-    // Create timer
+    // Initialize timer
     timer.emplace(io_context, 180);
+
+    // Set up timer callback
     auto loop = 
     [&, &data = atomic_data.value()](const boost::system::error_code&) {
-        std::cout << boost::this_thread::get_id() << " tick" << std::endl;
-        std::cout << "clients: " << data.clients << std::endl;
-        std::cout << "sum    : " << data.count_sum << std::endl;
-        std::cout << "average: " 
+        std::cout << "Tick: " << timer->get_count() << std::endl;
+        std::cout << "\tClients: " << data.clients << std::endl;
+        std::cout << "\tSum    : " << data.count_sum << std::endl;
+        std::cout << "\tAverage: " 
                 << ((data.clients) ? (data.count_sum / float(data.clients)) : 0)
                 << std::endl;
 
