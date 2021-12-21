@@ -1,13 +1,14 @@
 pip install paho-mqtt
     python mqtt library
 
-paho mqtt python documentation
-    https://www.eclipse.org/paho/index.php?page=clients/python/docs/index.php
-
 g++
 
 To run client
     python3 wtec_client.py
+
+To install boost (boost 1.74)
+    https://www.boost.org/users/history/version_1_74_0.html
+    sudo apt-get install libboost-all-dev
 
 
 To run server

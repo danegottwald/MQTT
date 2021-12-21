@@ -1,15 +1,15 @@
 CXX = g++
 CXXFLAGS = -std=c++14 -I${INCLUDE_DIR}
 
-TARGET = wtec_server
+TARGET = server
 
 INCLUDE_DIR = include
 OBJ_DIR = obj
 
-SRCS = wtec_server.cpp server.cpp
+SRCS = server.cpp wtec_server.cpp
 OBJS = $(SRCS:%.cpp=${OBJ_DIR}/%.o)
 
-LIBS = -lpthread
+LIBS = -pthread
 
 all: ${TARGET}
 	@echo $(TARGET) successfully built

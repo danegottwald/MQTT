@@ -1,16 +1,8 @@
 
-#include <iostream>
-#include <iomanip>
-#include <set>
-
 #include <mqtt_server_cpp.hpp>
 #include <mqtt/setup_log.hpp>
 
-#include <boost/atomic.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/multi_index_container.hpp>
-#include <boost/multi_index/ordered_index.hpp>
-#include <boost/multi_index/member.hpp>
+#include <boost/atomic/atomic.hpp>
 
 class mqtt_server {
     private:
@@ -35,6 +27,7 @@ class mqtt_server {
     public:
         // Constructors
         mqtt_server(std::uint16_t port_num);
+        ~mqtt_server();
 
         // Set server to a listening state for connecting clients
         void listen();

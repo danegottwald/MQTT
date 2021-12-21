@@ -1,157 +1,48 @@
 
+#include <iostream>
+
+#include <boost/lexical_cast.hpp>
+
 #include "server.hpp"
 
-#include <boost/thread.hpp>
-#include <boost/asio.hpp>
-#include <boost/bind/bind.hpp>
+int main(int argc, char** argv) {
+    if (argc != 2) {
+        std::cout << argv[0] << " [port]" << std::endl;
+        return -1;
+    }
 
-typedef mqtt::server<>::endpoint_t          client_endpoint;
-typedef std::shared_ptr<client_endpoint>    sptr_client_endpoint;
+    // Literal text form to uint16_t
+    std::uint16_t port = boost::lexical_cast<std::uint16_t>(argv[1]);
 
-// Constructor
-mqtt_server::mqtt_server(uint16_t port = 1883) {
-    // Construct object in-place with parameters (TCP/IPv4 : port)
-    instance.emplace(
-        boost::asio::ip::tcp::endpoint(
-            boost::asio::ip::tcp::v4(),
-            port
-        ),
-        io_context
-    );
+    // Run server
+    mqtt_server server(port);
+    server.listen();
 
-    // notable instance methods (methods for mqtt::server<>)
-    // port() returns server port number
-    // close() close server
-    // ioc_accept() returns reference io context for acceptor
-    // ioc_con() returns reference io context for connections
-    // set_error_handler()
-    // set_accept_handler()
+    //mqtt::setup_log();
 
-    set_handlers();
+    return 0;
 }
 
-// Set the wqtt_server to a listen state
-void mqtt_server::listen() {
-    instance->listen();
+// MQTT_CPP hosts on IP 0.0.0.0, so any incoming ip can connect
 
-    // Create 3 minute timer
-    auto interval = boost::asio::chrono::seconds(10);
-    boost::asio::steady_timer timer(io_context, interval);
+// Localhost port (127.0.0.1 / 0.0.0.0)
 
-    boost::function<void(const boost::system::error_code&)> loop;
-    loop = [&, &data = atomic_data.value()](const boost::system::error_code&) {
-        std::cout << boost::this_thread::get_id() << " tick" << std::endl;
-        std::cout << "clients: " << data.clients << std::endl;
-        std::cout << "sum    : " << data.count_sum << std::endl;
-        std::cout << "average: " 
-                  << ((data.clients) ? (data.count_sum / float(data.clients)) : 0)
-                  << std::endl;
+// https://www.boost.org/doc/libs/1_78_0/
 
-        // Set new expiration time
-        timer.expires_at(timer.expires_at() + interval);
+// ideas for sum of last 3 minutes of data
+// 1. create main thread that checks every three minutes and computes 
+//      average, server listen on another thread that locks when inc's
+// 2. 
 
-        // Reset data between interval
-        data.clients = data.count_sum = 0;
-
-        // Refresh timer
-        timer.async_wait(loop);
-    };
-
-    // Run timer asynchronously
-    timer.async_wait(boost::bind(loop, boost::asio::placeholders::error));
-
-    // Blocks here for event loops
-    io_context.run();
-}
-
-// Set all the necessary callbacks that are required for the mqtt_server
-void mqtt_server::set_handlers() {
-    // Set error handler for server 'instance'
-    instance->set_error_handler(
-        [](mqtt::error_code ec) {
-            std::cerr << "wqtt_server: [Errno " << ec.value() << "] " 
-                      << ec.message() << std::endl;
-        }
-    );
-
-    // Set accept handler for server 'instance'
-    instance->set_accept_handler(
-        [this](sptr_client_endpoint sptr_ep) {
-            auto& ep = *sptr_ep;
-
-            // typedef std::remove_reference_t<decltype(ep)>::packet_id_t
-            //     packet_id_t;
-            //std::cout << "debug: accept" << std::endl;
-
-            // Start session with connected client
-            //ep.start_session(std::move(sptr_ep));
-            ep.start_session(sptr_ep);
-
-            // ERROR
-            // CLOSE
-            // CONNECT
-            // DISCONNECT
-            // PUBLISH
-            // SUBSCRIBE
-            // UNSUBSCRIBE
-
-            // CLOSE
-            ep.set_close_handler(
-                []() {
-                    //std::cout << "[client] close" << std::endl;
-                }
-            );
-
-            // ERROR
-            ep.set_error_handler([&](mqtt::error_code ec){
-                // handle error
-            });
-
-            // CONNECT
-            ep.set_connect_handler(
-                [&ep](mqtt::buffer client_id,
-                    mqtt::optional<mqtt::buffer> username,
-                    mqtt::optional<mqtt::buffer> password,
-                    mqtt::optional<mqtt::will>,
-                    bool clean_session,
-                    std::uint16_t keep_alive) {
-                        // Acknowledge connection, accept
-                        //std::cout << "[client] connect" << std::endl;
-                        ep.connack(false, mqtt::connect_return_code::accepted);
-                        return true;
-                }
-            );
-
-            // DISCONNECT
-            ep.set_disconnect_handler(
-                [&ep]() {
-                    //std::cout << "[client] disconnect" << std::endl;
-                    ep.disconnect(mqtt::v5::disconnect_reason_code::normal_disconnection);
-                }
-            );
-
-            typedef std::remove_reference_t<decltype(ep)>::packet_id_t
-                packet_id_t;
-
-            // PUBLISH
-            ep.set_publish_handler(
-                [&data = atomic_data.value()](mqtt::optional<packet_id_t> packet_id,
-                    mqtt::publish_options pubopts,
-                    mqtt::buffer topic_name,
-                    mqtt::buffer contents) {
-                        std::cout << "[client] publish " << contents << std::endl;
-                        // Increment client publish request
-                        data.clients++;
-                        // Sum client publish count data (lexical_cast str to int)
-                        data.count_sum += boost::lexical_cast<boost::uint64_t>(contents);
-                        //std::cout << "[server] topic_name: " << topic_name << std::endl;
-                        //std::cout << "[server] contents: " << contents << std::endl;
-                        return true;
-                }
-            );
-
-            // DO REST OF HANDLERS
-        }
-    );
-}
+// MQTT (MQ Telemetry Transport, MQ refers to IBM's series of products)
+//      Uses Publish/Subscribe model
+//          Publishers publish messages
+//          Subscribers receive messages if they have subscribed to the 
+//              topic/channel
+//      Publishers and subscribers do not directly communicate with 
+//          each other, but to a central server/broker that mediates
+//          in between.
+//      The server/broker filters the incoming messages and distrubes
+//          them to the subscribers accordingly.
+//      Publishers and subscribers are also referred to as 'clients'
 
