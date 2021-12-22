@@ -12,7 +12,7 @@ py client.py
 
 # Server (server/)
 Requires the following:
-* [Boost C++](https://www.boost.org/users/download/)
+* [Boost 1.74+](https://www.boost.org/users/download/)
 ```bash
 sudo apt-get install libboost-all-dev
 ```
