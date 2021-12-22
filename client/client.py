@@ -24,8 +24,8 @@ def run():
 
         # Sleep for random amount of time
         sleep = random.randint(1, 30)
-        print("Process " + str(os.getpid()) + ": sleep "
-              + str(sleep) + "s, publish " + str(rand))
+        print("Process " + str(os.getpid()) + ": sleep %2d"
+              % sleep + "s, publish " + str(rand))
         time.sleep(sleep)
 
         # Run command, if error is returned then exit process
