@@ -39,7 +39,8 @@ public:
 
     // Supply new function to async_wait on
     void async_wait(const func_ptr &l);
-
+    
+    boost::posix_time::ptime get_local_time();
     inline boost::uint32_t get_count() { return count; }
     inline const func_ptr &get_func() { return func; }
 };

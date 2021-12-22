@@ -39,7 +39,8 @@ void mqtt_server::listen() {
     // Set up timer callback
     auto loop = 
     [&, &data = atomic_data.value()](const boost::system::error_code&) {
-        std::cout << "Tick: " << timer->get_count() << std::endl;
+        std::cout << "[" << timer->get_local_time() << "] Tick: "
+                  << timer->get_count() << std::endl;
         std::cout << "\tClients: " << data.clients << std::endl;
         std::cout << "\tSum    : " << data.count_sum << std::endl;
         std::cout << "\tAverage: " 

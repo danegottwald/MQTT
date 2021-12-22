@@ -1,6 +1,8 @@
 
 #include "mqtt_timer.hpp"
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 namespace wtec {
 
 // Constructor
@@ -38,6 +40,11 @@ void mqtt_timer::async_wait(const func_ptr &l) {
     count++;
     func = l;
     timer->async_wait(boost::bind(l, boost::asio::placeholders::error));
+}
+
+// Wrapper around getting local time
+boost::posix_time::ptime mqtt_timer::get_local_time() {
+    return boost::posix_time::second_clock::local_time();
 }
 
 }
